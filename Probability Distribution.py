@@ -7,7 +7,6 @@ import numpy as np
 import sys
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 
-# --- Suggestion Data ---
 SUGGESTIONS = {
 
     "1D box": """#Particle in a 1-D box
@@ -48,25 +47,23 @@ def copy_to_text(code):
     psi_text.delete("1.0", tk.END)
     psi_text.insert("1.0", f"    {code}")
 
-# --- GUI Setup ---
+#GUI Setup
 root = tk.Tk()
 root.title("Probability Distribution ~ ASen")
 
 def on_toggle():
     """Changes the color of the polar coordinate display based on checkbox state."""
     if polar_var.get():
-        polar_display.config(fg="black")  # Active color
+        polar_display.config(fg="black")
     else:
-        polar_display.config(fg="#a0a0a0")  # Faded gray color
+        polar_display.config(fg="#a0a0a0")
 
 def get_inputs():
     global n, l, m, Lx, Ly, Lz, dx, f, canvas_frame, user_psi_logic,N
     try:
-        # 1. Retrieve Numeric Inputs
         n, l, m, N = int(entry_n.get()), int(entry_l.get()), int(entry_m.get()), int(entry_N.get())
         Lx, Ly, Lz,  dx = float(entry_Lx.get()), float(entry_Ly.get()), float(entry_Lz.get()), float(entry_dx.get())
 
-        # 2. Build the function string based on the UI state
         user_psi_logic = psi_text.get("1.0", tk.END).strip()
 
         code_lines = [
@@ -86,31 +83,28 @@ def get_inputs():
 
         full_code = "\n".join(code_lines)
 
-        # 3. Execute and replace function f
+        #dictionary of libraries, functions and variables predefined for defining wavefunction
         local_env = {
             'np': np,
             'lag': lag,
             'leg': leg,
-            'n': n, 'l': l, 'm': m, 'N': N, # Pass the current quantum numbers into the scope
+            'n': n, 'l': l, 'm': m, 'N': N,
             'dx':dx, 'Lx':Lx, 'Ly':Ly, 'Lz':Lz
         }
-        # Note: Add your actual 'lag' and 'leg' functions to this dictionary
         exec(full_code, local_env)
         f = local_env['f']
 
         for widget in root.winfo_children():
-            widget.destroy()  # Clear all input fields
+            widget.destroy()
 
         root.title("Probability Distribution ~ ASen")
         root.geometry("1000x1400")
         console_text = tk.Text(root, bg="white", fg="black", height=10, font=("Consolas", 10))
         console_text.pack(expand=True, fill=tk.BOTH, padx=10, pady=10)
 
-        # Bottom half: Plot Area
         canvas_frame = tk.Frame(root, bg="white")
         canvas_frame.pack(expand=True, fill=tk.BOTH, padx=10, pady=5)
 
-        # This allows print() to show up in the text box
         class Redirector:
             def write(self, s):
                 console_text.insert(tk.END, s)
@@ -121,7 +115,6 @@ def get_inputs():
 
         sys.stdout = Redirector()
 
-        # Stop the mainloop so the rest of your script (the math) can run
         root.quit()
 
     except Exception as e:
@@ -134,11 +127,9 @@ def on_closing():
 
 root.protocol("WM_DELETE_WINDOW", on_closing)
 
-# Create a Main Container to hold Left and Right columns
 main_container = tk.Frame(root)
 main_container.pack(fill=tk.BOTH, expand=True, padx=10, pady=10)
 
-# --- LEFT COLUMN (Inputs) ---
 left_col = tk.Frame(main_container)
 left_col.pack(side=tk.LEFT, fill=tk.BOTH, expand=True, padx=(0, 10))
 
@@ -165,14 +156,9 @@ entry_n, entry_l, entry_m, entry_N, entry_Lx, entry_Ly, entry_Lz, entry_dx = ent
 
 tk.Label(left_col, text="Define your wave function f(p) here:", font=('Arial', 10, 'bold')).pack(pady=(10, 0))
 
-
-
-# --- Code Interface (The "Stitched" Look) ---
-# Header
 tk.Label(left_col, text="def f(p):\n    x, y, z = p[0], p[1], p[2]\n",
          anchor="w", justify="left", font=("Consolas", 10), fg="black").pack(fill=tk.X, padx=20)
 
-# --- Coordinate Control ---
 polar_var = tk.BooleanVar(value=True)
 tk.Checkbutton(
     left_col,
@@ -182,7 +168,6 @@ tk.Checkbutton(
     anchor='w'
 ).pack(fill=tk.X, padx=20)
 
-# The Polar Block (Color changes based on checkbox)
 polar_code_text = """    # Transforming to polar coordinates 
     phi = np.atan2(y, x)
     theta = np.atan2((x**2 + y**2)**0.5, z)
@@ -192,20 +177,17 @@ polar_display = tk.Label(left_col, text=polar_code_text, anchor="w", justify="le
                          font=("Consolas", 10), fg="black")
 polar_display.pack(fill=tk.X, padx=20)
 
-# Editable Section
 tk.Label(root, text="         #Define your psi here (Add constraints for your model):", font=("Arial", 9, "italic")).pack(anchor="w", padx=20, pady=(10, 0))
 psi_text = tk.Text(root, height=5, width=100, font=("Consolas", 10), wrap=tk.NONE)
 psi_text.insert("1.0", """    #Default function set for Hydrogen Atom Orbitals
     psi = lag(2*r/n, n-l-1, 2*l+1) * np.exp(-r/n) * np.cos(m*phi) * leg(l, m, np.cos(theta))[0]""")
 psi_text.pack(padx=20, pady=5)
 
-# Footer
 tk.Label(root, text="    return psi", anchor="w", font=("Consolas", 10), fg="black").pack(fill=tk.X, padx=20)
 
 tk.Button(root, text="PROCEED", command=get_inputs, bg="#4CAF50", fg="white", font=("Arial", 10, "bold")).pack(
     pady=15)
 
-# --- RIGHT COLUMN (Suggestions) ---
 right_col = tk.LabelFrame(main_container, text=" Quick Suggestions ", padx=10, pady=10)
 right_col.pack(side=tk.RIGHT, fill=tk.Y)
 
@@ -230,11 +212,12 @@ except NameError:
     print("Window was closed without submitting.")
 
 def display_plot(fig):
-    """Call this function instead of plt.show()"""
     canvas = FigureCanvasTkAgg(fig, master=canvas_frame)
     canvas.draw()
     canvas.get_tk_widget().pack(side=tk.TOP, fill=tk.BOTH, expand=1)
     root.update()
+
+#Real Code
 
 '''
 def f(p):
@@ -279,7 +262,6 @@ def seq(f, a, b, c):
 
 a=(0.24-0.23*np.exp(-1.17*((Lx+Ly+Lz)/max(Lx,Ly,Lz)-1)))*(np.log(5000)/np.log(N))**10
 if a>1: a=1
-#1-np.exp(-((Lx+Ly+Lz)/dx)/(N**(4-((Lx+Ly+Lz)/max(Lx,Ly,Lz))**2))*8)*0.99
 p = seq(f, Lx, Ly, Lz)
 c = c(list(map(f, p)))
 
@@ -295,4 +277,5 @@ ax.set_ylabel('Y')
 ax.set_zlabel('Z')
 ax.set_aspect('equal')
 display_plot(fig)
+
 root.mainloop()
