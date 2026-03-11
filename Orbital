@@ -1,0 +1,30 @@
+    #Particle in a 1-D box
+    if abs(x)<dx/2 and abs(y)<dx/2 and 0<=z<=Lz:
+        psi=np.sin(n*np.pi*z/Lz)
+    else: psi=0
+
+
+    #Particle in a 2-D box
+    if abs(z)<dx/2 and 0<=x<=Lx and 0<=y<=Ly:
+        psi=np.sin(n*np.pi*x/Lx)*np.sin(m*np.pi*y/Ly)
+    else: psi=0
+
+    #Particle in a 2-D box
+    if 0<=x<=Lx and 0<=y<=Ly and 0<=z<=Lz:
+        psi=np.sin(n*np.pi*x/Lx)*np.sin(m*np.pi*y/Ly)*np.sin(l*np.pi*z/Lz)
+    else: psi=0
+
+    #Particle in a Ring
+    R=max(Lx,Ly)
+    if abs(r-R)<dx/2:
+        psi=np.cos(m*phi)
+    else: psi=0
+
+    #Particle in a Sphere
+    R=max(Lx,Ly,Lz)
+    if abs(r-R)<dx/2:
+        psi=np.cos(m*phi)*leg(l, m, np.cos(theta))[0]
+    else: psi=0
+
+    #Electron in a Hydrogen Atom
+    psi = lag(2*r/n, n-l-1, 2*l+1) * np.exp(-r/n) * np.cos(m*phi) * leg(l, m, np.cos(theta))[0]
